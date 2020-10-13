@@ -26,6 +26,10 @@ module.exports = {
       env: {
         jest: true,
       },
+      rules: {
+        "no-restricted-globals": "off",
+        "no-restricted-syntax": "off",
+      },
     },
   ],
 };
