@@ -2,7 +2,8 @@
 const IS_PROD = ["production", "prod"].includes(process.env.NODE_ENV);
 const path = require("path");
 
-const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+  .BundleAnalyzerPlugin;
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 function resolve(str) {
@@ -40,7 +41,15 @@ module.exports = {
       },
     },
   },
-  configureWebpack: {},
+  configureWebpack: (config) => {
+    config.externals = {
+      // vue: "Vue",
+      // "element-ui": "ELEMENT",
+      // "vue-router": "VueRouter",
+      // vuex: "Vuex",
+      // axios: "axios"
+    };
+  },
   chainWebpack(config) {
     // 修复HMR
     config.resolve.symlinks(true);
@@ -95,14 +104,14 @@ module.exports = {
           algorithm: "gzip",
           test: productionGzipExtensions,
           threshold: 10240,
-          minRatio: 0.8
+          minRatio: 0.8,
         })
       );
       //添加打包分析
       config.plugin("webpack-report").use(BundleAnalyzerPlugin, [
         {
-          analyzerMode: "static"
-        }
+          analyzerMode: "static",
+        },
       ]);
       config.plugins = [...config.plugins, ...plugins];
     } else {
@@ -111,14 +120,32 @@ module.exports = {
       config.devtool("cheap-source-map");
     }
 
-    // config.plugin("html").tap((args) => {
-    //   args[0].cdn = cdn;
-    //   return args;
-    // });
+    const cdn = {
+      // 访问https://unpkg.com/element-ui/lib/theme-chalk/index.css获取最新版本
+      css: [
+        // "//unpkg.com/element-ui@2.10.1/lib/theme-chalk/index.css"
+      ],
+      js: [
+        // "//unpkg.com/vue@2.6.10/dist/vue.min.js", // 访问https://unpkg.com/vue/dist/vue.min.js获取最新版本
+        // "//unpkg.com/vue-router@3.0.6/dist/vue-router.min.js",
+        // "//unpkg.com/vuex@3.1.1/dist/vuex.min.js",
+        // "//unpkg.com/axios@0.19.0/dist/axios.min.js",
+        // "//unpkg.com/element-ui@2.10.1/lib/index.js",
+      ],
+    };
+
+    // 如果使用多页面打包，使用vue inspect --plugins查看html是否在结果数组中
+    config.plugin("html").tap((args) => {
+      // html中添加cdn
+      args[0].cdn = cdn;
+      return args;
+    });
     config.plugin("copy").tap((args) => {
       args[0].push({
         from: resolve(process.env.VUE_APP_STATIC_PATH),
-        to: resolve(process.env.outputDir + "/" + process.env.VUE_APP_STATIC_PATH),
+        to: resolve(
+          process.env.outputDir + "/" + process.env.VUE_APP_STATIC_PATH
+        ),
         ignore: [".*"],
       });
       return args;
