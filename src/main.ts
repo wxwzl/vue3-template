@@ -1,4 +1,10 @@
 import "./registerServiceWorker";
-import app from "./App";
-import "@/icons";
+import { createApp } from "vue";
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
+import svgInstall from "@/icons";
+const app = createApp(App);
+app.use(store).use(router);
+svgInstall(app);
 app.mount("#app");
