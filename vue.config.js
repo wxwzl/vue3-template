@@ -4,7 +4,7 @@ const path = require("path");
 
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
   .BundleAnalyzerPlugin;
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+// const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 function resolve(str) {
   return path.resolve(__dirname, str);
@@ -80,40 +80,34 @@ module.exports = {
       .set("@router", resolve("src/router"))
       .set("@mixins", resolve("src/mixins"));
     if (IS_PROD) {
-      //配置混淆压缩，去除console.log；
-      const plugins = [];
-      plugins.push(
-        new UglifyJsPlugin({
-          uglifyOptions: {
-            compress: {
-              warnings: false,
-              drop_console: true,
-              drop_debugger: false,
-              pure_funcs: ["console.log"], //移除console
-            },
-          },
-          sourceMap: false,
-          parallel: true,
-        })
-      );
+      //配置混淆压缩，去除console.log；vue-cli内置TerserPlugin压缩，而且UglifyJsPlugin不能处理es6
+      // config.plugin("minify").use(UglifyJsPlugin,[{
+      //   uglifyOptions: {
+      //     compress: {
+      //       warnings: false,
+      //       drop_console: true,
+      //       drop_debugger: false,
+      //       pure_funcs: ["console.log"], //移除console
+      //     },
+      //   },
+      //   sourceMap: false,
+      //   parallel: true,
+      // }]);
       //设置gzip压缩
       const productionGzipExtensions = /\.(js|css|json|txt|html|ico|svg)(\?.*)?$/i;
-      plugins.push(
-        new CompressionWebpackPlugin({
-          filename: "[path].gz[query]",
-          algorithm: "gzip",
-          test: productionGzipExtensions,
-          threshold: 10240,
-          minRatio: 0.8,
-        })
-      );
+      config.plugin("gzip").use(CompressionWebpackPlugin,[{
+        filename: "[path].gz[query]",
+        algorithm: "gzip",
+        test: productionGzipExtensions,
+        threshold: 10240,
+        minRatio: 0.8,
+      }]);
       //添加打包分析
       config.plugin("webpack-report").use(BundleAnalyzerPlugin, [
         {
           analyzerMode: "static",
         },
       ]);
-      config.plugins = [...config.plugins, ...plugins];
     } else {
       // 开发环境, sourcemap不包含列信息
       // 参考：https://webpack.js.org/configuration/devtool/#development
@@ -138,6 +132,7 @@ module.exports = {
     config.plugin("html").tap((args) => {
       // html中添加cdn
       args[0].cdn = cdn;
+      args[0].title = process.env.appName;
       return args;
     });
     config.plugin("copy").tap((args) => {
