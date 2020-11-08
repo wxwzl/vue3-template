@@ -1,42 +1,138 @@
 import axios from "axios";
+import { Message } from "element-ui";
+import ResponseHelper from "@/dataTypes/impl/ResponseHelper";
+import { IResponse } from "@/dataTypes/interface/responseHelper";
+import { extend } from "@utils/commonUtil";
 // create an axios instance
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
+  baseURL: process.env.VUE_APP_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 50000, // request timeout
+  timeout: 20000, // request timeout
 });
+
 // 请求拦截
 // request interceptor
 service.interceptors.request.use(
-  (config) => {
+  (config: any) => {
     // do something before request is sent
-    config.headers["Content-Type"] = "application/json;charset=UTF-8";
+    if (!config.headers["Content-Type"]) {
+      config.headers["Content-Type"] = "application/json;charset=UTF-8";
+    }
     return config;
   },
-  (error) => {
-    // do something with request error
-    return Promise.reject(error);
+  (error: any) => {
+    return Promise.reject(ResponseHelper.getResponseFromError(error));
   }
 );
 // 响应拦截
 // response interceptor
 service.interceptors.response.use(
-  /**
-   * If you want to get http information such as headers or status
-   * Please return  response => response
-   */
-
-  /**
-   * Determine the request status by custom code
-   * Here is just an example
-   * You can also judge the status by HTTP Status Code
-   */
-  (response) => {
-    return response;
+  (response: any) => {
+    const res = ResponseHelper.getResponse(response);
+    if (ResponseHelper.isSuccess(response)) {
+      return res;
+    } else {
+      return Promise.reject(res);
+    }
   },
-  (error) => {
-    // return Promise.reject(error)
-    return Promise.reject(error);
+  (error: any) => {
+    return Promise.reject(ResponseHelper.getResponseFromError(error));
   }
 );
-export default service;
+
+function handleErrorMessage(message: string): void {
+  Message.error(message);
+}
+
+// export default service;
+export function request(option: Record<string | number, any>): Promise<IResponse> {
+  return service(option)
+    .then(
+      (res: IResponse): Promise<IResponse> => {
+        if (option.validator && option.validator(res) != true) {
+          return Promise.reject(res);
+        }
+        return Promise.resolve(res);
+      }
+    )
+    .catch(
+      (err: IResponse): Promise<IResponse> => {
+        if (option.ignoreError != true) {
+          const message = err.message;
+          handleErrorMessage(message);
+        }
+        return Promise.reject(err);
+      }
+    );
+}
+
+export function get(
+  url: string,
+  data?: any,
+  config?: Record<string | number, any>
+): Promise<IResponse> {
+  const option = {
+    url,
+    method: "get",
+    params: data || {},
+  };
+  extend(option, config);
+  return request(option);
+}
+
+export function post(
+  url: string,
+  data?: any,
+  config?: Record<string | number, any>
+): Promise<IResponse> {
+  const option = {
+    url,
+    method: "post",
+    data: data || {},
+  };
+  extend(option, config);
+  return request(option);
+}
+
+export function put(
+  url: string,
+  data?: any,
+  config?: Record<string | number, any>
+): Promise<IResponse> {
+  const option = {
+    url,
+    method: "put",
+    data: data || {},
+  };
+  extend(option, config);
+  return request(option);
+}
+
+export function del(
+  url: string,
+  data?: any,
+  config?: Record<string | number, any>
+): Promise<IResponse> {
+  const option = {
+    url,
+    method: "delete",
+    data: data || {},
+  };
+  extend(option, config);
+  return request(option);
+}
+
+export function patch(
+  url: string,
+  data?: any,
+  config?: Record<string | number, any>
+): Promise<IResponse> {
+  const option = {
+    url,
+    method: "patch",
+    data: data || {},
+    headers: { "Content-Type": "x-www-form-urlencoded" },
+  };
+  extend(option, config);
+  return request(option);
+}

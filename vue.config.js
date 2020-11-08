@@ -73,12 +73,16 @@ module.exports = {
       // .set("vue$", "vue/dist/vue.esm.js")
       .set("@", resolve("src"))
       .set("@components", resolve("src/components"))
+      .set("@serviceComponents", resolve("src/serviceComponents"))
       .set("@utils", resolve("src/utils"))
-      .set("@views", resolve("src/views"))
+      .set("@modules", resolve("src/modules"))
+      .set("@styles", resolve("src/assets/styles"))
       .set("@assets", resolve("src/assets"))
+      .set("@store", resolve("src/store"))
       .set("@images", resolve("src/assets/images"))
       .set("@router", resolve("src/router"))
-      .set("@mixins", resolve("src/mixins"));
+      .set("@service", resolve("src/service"))
+      .set("@dataTypes", resolve("src/dataTypes"));
     if (IS_PROD) {
       //配置混淆压缩，去除console.log；vue-cli内置TerserPlugin压缩，而且UglifyJsPlugin不能处理es6
       // config.plugin("minify").use(UglifyJsPlugin,[{

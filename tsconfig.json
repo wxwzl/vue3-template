@@ -16,9 +16,20 @@
       "jest"
     ],
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"],
+      "@api/*": ["src/api/*"],
+      "@directives/*": ["src/directives/*"],
+      "@images/*": ["src/assets/images/*"],
+      "@styles/*": ["src/assets/styles/*"],
+      "@components/*": ["src/components/*"],
+      "@serviceComponents/*": ["src/serviceComponents/*"],
+      "@plugins/*": ["src/plugins/*"],
+      "@utils/*": ["src/utils/*"],
+      "@dataTypes/*": ["src/dataTypes/*"],
+      "@modules/*": ["src/modules/*"],
+      "@service/*": ["src/service/*"],
+      "@router/*": ["src/router/*"],
+      "@store/*": ["src/store/*"]
     },
     "lib": [
       "esnext",
